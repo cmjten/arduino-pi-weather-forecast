@@ -6,6 +6,11 @@ the PyOWM module. This data will be sent to the Arduino Uno through the
 serial port, then displayed on the LCD screen. This script will also
 tell the Arduino Uno which data to display. A PS3 controller will be used
 as input.
+
+Dependencies:
+- Pygame
+- PyOWM
+- PySerial
 """
 
 import pygame, pyowm, serial, time
