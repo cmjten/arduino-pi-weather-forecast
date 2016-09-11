@@ -1,4 +1,4 @@
-# Arduino Pi Weather Forecast
+# Arduino Uno - Raspberry Pi Weather Forecast
 
 The Raspberry Pi gathers weather data from the Internet through a Python script. This weather data is then sent
 to the Arduino Uno and displayed on the 16x2 LCD screen. A PS3 controller connected through Bluetooth is used 
