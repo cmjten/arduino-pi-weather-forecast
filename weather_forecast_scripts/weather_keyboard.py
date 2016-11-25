@@ -1,20 +1,29 @@
 """
 Arduino Uno - Raspberry Pi Weather Forecast
 
-This Python script will gather weather data from the Internet through
-the PyOWM module. This data will be sent to the Arduino Uno through the
-serial port, then displayed on the LCD screen. This script will also
-tell the Arduino Uno which data to display. A PS3 controller will be 
-used as input.
+This Python script gathers weather data from the Internet using the
+PyOWM API. This data is sent to the Arduino Uno through serial port,
+then displayed on the LCD screen. This script also tells the Arduino Uno
+which data to display. Command line is used as input.
+
+Commands:
+city - shows city name
+condition - shows weather condition
+temperature - shows temperature
+humidity - shows humidity
+wind - shows wind
+new - gets new city
+update - updates weather information
+help - command list
 
 External modules required:
-- Pygame
 - PyOWM
 - PySerial
 """
 
-import pygame, pyowm, serial, time
+import pyowm, serial, time
 import serial.tools.list_ports as list_ports
+
 
 class WeatherInfo:
     """
@@ -29,15 +38,16 @@ class WeatherInfo:
     """
     def __init__(self):
         """Constructor for WeatherInfo class"""
-        self._city = "Mississauga, CA" # Default city is Mississauga
+        # Setting up PyOWM
+        self._owm = pyowm.OWM("5ec1a1baebeabb32f92cec56a6682dfb")
+        self._forecast = None
+        
+        self._city = None
+        self.set_city() # Asks the user for a city
         
         # Stores forecast data in the following format:
         # [City, Condition, Temperature, Humidity, Wind]
         self._forecast_data = [] 
-
-        # Setting up PyOWM
-        self._owm = pyowm.OWM("5ec1a1baebeabb32f92cec56a6682dfb")
-        self._forecast = self._owm.weather_at_place(self._city).get_weather()
 
 
     def get_city(self):
@@ -52,7 +62,7 @@ class WeatherInfo:
     def set_city(self):
         """Prompts the user for a new city"""
         self._city = input("Enter a new city: ")
-        print(self._city)
+
         try:
             self._forecast = self._owm.weather_at_place(self._city).get_weather()
             print("City found")
@@ -123,15 +133,13 @@ class WeatherSerialPort:
 
 class WeatherController:
     """
-    Controller for the script, Takes input from the PS3 controller and sends
+    Controller for the script, Takes input from command line and sends
     data to the Arduino Uno
-    """
-    #Pygame mappings for the PS3 buttons
-    LEFT = 7
-    RIGHT = 5
-    CIRCLE = 13
-    SQUARE = 15
 
+    Instance variables:
+    _weather_info: WeatherInfo object
+    _serial_port: Serial port where the Arduino Uno is connected
+    """
     def __init__(self, weather_info, serial_port):
         """
         Constructor
@@ -143,20 +151,6 @@ class WeatherController:
         """
         self._weather_info = weather_info
         self._serial_port = serial_port.get_serial_port()
-
-        # Sets up pygame
-        pygame.init()
-        self._controller = pygame.joystick.Joystick(0)
-        self._controller.init()
-
-        # True is a button is pressed, false otherwise
-        # Previous button state for detecting a change in state and
-        # preventing multiple signals to be sent when button is held
-        # down
-        self._current_button_state = False
-        self._previous_button_state = True
-
-        self._data_index = 2 # index + 2 of data to be shown
 
 
     def update(self):
@@ -173,56 +167,52 @@ class WeatherController:
             time.sleep(2)
 
         # Displays new city's name
-        self._data_index = 2
-        self._serial_port.write([self._data_index])
+        self._serial_port.write([2])
         print("Update complete")
 
 
-    def scroll_left(self):
-        """Scrolls to the left"""
-        if self._data_index > 2:
-            self._data_index -= 1
-        self._serial_port.write([self._data_index])
+    def help(self):
+        """Displays commands"""
+        print("\nArduino Pi Weather Forecast Commands\n" +
+              "city: shows city name\n" +
+              "condition: shows weather condition\n" +
+              "temperature: shows temperature\n" +
+              "humidity: shows humidity\n" +
+              "wind: shows wind\n" +
+              "new: asks user for a new city\n" +
+              "update: updates weather information\n")
 
 
-    def scroll_right(self):
-        """Scrolls to the right"""
-        if self._data_index < 6:
-            self._data_index += 1
-        self._serial_port.write([self._data_index])
+    def command_input(self):
+        """Asks the user for a command"""
+        command = input("Enter a command ('help' to show list of commands): ")
 
+        if command == "city":
+            self._serial_port.write([2])
 
-    def controller_listener(self):
-        """Processes input from the PS3 controller"""
-        for event in pygame.event.get():
-            pass
+        elif command == "condition":
+            self._serial_port.write([3])
 
-        # Gets the current state of the controller (if any buttons have
-        # been pressed or not). Detects state change
-        self._current_button_state = self._controller.get_button(self.LEFT) or \
-                                     self._controller.get_button(self.RIGHT) or \
-                                     self._controller.get_button(self.CIRCLE) or \
-                                     self._controller.get_button(self.SQUARE)
+        elif command == "temperature":
+            self._serial_port.write([4])
 
-        if self._current_button_state != self._previous_button_state:
-            # Change in state
-            if self._controller.get_button(self.LEFT):
-                # Scroll left
-                self.scroll_left()
-                
-            elif self._controller.get_button(self.RIGHT):
-                # Scroll right
-                self.scroll_right()
+        elif command == "humidity":
+            self._serial_port.write([5])
 
-            elif self._controller.get_button(self.CIRCLE):
-                # Update
-                self.update()
+        elif command == "wind":
+            self._serial_port.write([6])
 
-            elif self._controller.get_button(self.SQUARE):
-                # New city
-                self._weather_info.set_city()
+        elif command == "new":
+            self._weather_info.set_city()
 
-        self._previous_button_state = self._current_button_state
+        elif command == "update":
+            self.update()
+
+        elif command == "help":
+            self.help()
+
+        else:
+            print("Invalid command")
 
 
 if __name__ == "__main__":
@@ -231,4 +221,4 @@ if __name__ == "__main__":
     controller = WeatherController(weather_info, serial_port)
     
     while True:
-        controller.controller_listener()
+        controller.command_input()
