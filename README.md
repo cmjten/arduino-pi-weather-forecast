@@ -1,7 +1,7 @@
 # Arduino Uno - Raspberry Pi Weather Forecast
 
 The Raspberry Pi gathers weather data from the Internet through a Python script. This weather data is then sent
-to the Arduino Uno and displayed on the 16x2 LCD screen. This project comes with two Python scripts: weather_keyboard.py
+to the Arduino Uno and displayed on the 16x2 LCD screen. This project comes with two Python scripts: weather_commands.py
 for command line input and weather_ps3.py for PS3 controller input.
 
 ###[Demo Video (PS3 Controller)](https://vid.me/Iex0)
@@ -13,14 +13,14 @@ for command line input and weather_ps3.py for PS3 controller input.
 - 16x2 LCD screen
 - PS3 Controller (optional)
 
-### Commands (weather_keyboard.py)
+### Commands (weather_commands.py)
 - city : shows city name
 - condition : shows weather condition
 - temperature : shows temperature
 - humidity : shows humidity
 - wind : shows wind speed and direction
 - new : asks user for a new city
-- update : updates weather information
+- update : updates weather information ands sends data to Arduino Uno
 - help : command list
 
 ### Controls (weather_ps3.py)

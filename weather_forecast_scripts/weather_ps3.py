@@ -5,7 +5,7 @@ This Python script gathers weather data from the Internet using the
 PyOWM API. This data is sent to the Arduino Uno through serial port,
 then displayed on the LCD screen. This script also tells the Arduino Uno
 which data to display. For this version of the script, a PS3 controller
-is used as input. This script also depends on the weather_keyboard script.
+is used as input. This script also depends on the weather_commands script.
 
 External modules required:
 - Pygame
@@ -15,7 +15,7 @@ External modules required:
 
 import pygame, pyowm, serial, time
 import serial.tools.list_ports as list_ports
-from weather_keyboard import WeatherInfo, WeatherSerialPort, WeatherController
+from weather_commands import WeatherInfo, WeatherSerialPort, WeatherController
 
 
 class WeatherControllerPS3(WeatherController):
