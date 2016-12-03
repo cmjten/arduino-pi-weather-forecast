@@ -13,8 +13,7 @@ External modules required:
 - PySerial
 """
 
-import pygame, pyowm, serial, time
-import serial.tools.list_ports as list_ports
+import pygame
 from weather_commands import WeatherInfo, WeatherSerialPort, WeatherController
 
 
@@ -29,12 +28,12 @@ class WeatherControllerPS3(WeatherController):
     _current_button_state: Current button state
     _previous_button_state: Button state from previous loop iteration
     """
-    #Pygame mappings for the PS3 buttons
+    # Pygame mappings for the PS3 buttons
     LEFT = 7
     RIGHT = 5
     CIRCLE = 13
     SQUARE = 15
-    
+
     def __init__(self, weather_info, serial_port):
         super(WeatherControllerPS3, self).__init__(weather_info, serial_port)
         self._data_index = 2
@@ -51,20 +50,17 @@ class WeatherControllerPS3(WeatherController):
         self._current_button_state = False
         self._previous_button_state = True
 
-
     def scroll_left(self):
         """Scrolls to the left"""
         if self._data_index > 2:
             self._data_index -= 1
         self._serial_port.write([self._data_index])
 
-
     def scroll_right(self):
         """Scrolls to the right"""
-        if self._data_index < 6: 
+        if self._data_index < 6:
             self._data_index += 1
         self._serial_port.write([self._data_index])
-
 
     def controller_listener(self):
         """Processes input from the PS3 controller"""
@@ -73,17 +69,17 @@ class WeatherControllerPS3(WeatherController):
 
         # Gets the current state of the controller (if any buttons have
         # been pressed or not). Detects state change
-        self._current_button_state = self._controller.get_button(self.LEFT) or \
-                                     self._controller.get_button(self.RIGHT) or \
-                                     self._controller.get_button(self.CIRCLE) or \
-                                     self._controller.get_button(self.SQUARE)
+        self._current_button_state = self._controller.get_button(self.LEFT) or\
+                                    self._controller.get_button(self.RIGHT) or\
+                                    self._controller.get_button(self.CIRCLE) or\
+                                    self._controller.get_button(self.SQUARE)
 
         if self._current_button_state != self._previous_button_state:
             # Change in state
             if self._controller.get_button(self.LEFT):
                 # Scroll left
                 self.scroll_left()
-                
+
             elif self._controller.get_button(self.RIGHT):
                 # Scroll right
                 self.scroll_right()

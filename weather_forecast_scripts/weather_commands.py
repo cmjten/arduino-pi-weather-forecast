@@ -49,7 +49,6 @@ class WeatherInfo:
         # [City, Condition, Temperature, Humidity, Wind]
         self._forecast_data = [] 
 
-
     def get_city(self):
         """
         Returns the city
@@ -57,7 +56,6 @@ class WeatherInfo:
         return: self._city
         """
         return self._city
-
 
     def set_city(self):
         """Prompts the user for a new city"""
@@ -69,7 +67,6 @@ class WeatherInfo:
         except:
             print("City not found")
 
-
     def download_forecast_data(self):
         """Downloads forecast data from PyOWM API"""
         print("Updating...")
@@ -80,9 +77,9 @@ class WeatherInfo:
 
             # temp in C and F
             temp = str(int(self._forecast.get_temperature("celsius")["temp"]))\
-                   + " C / " + \
-                   str(int(self._forecast.get_temperature("fahrenheit")["temp"]))\
-                   + " F"
+                + " C / " + \
+                str(int(self._forecast.get_temperature("fahrenheit")["temp"]))\
+                + " F"
 
             humidity = str(self._forecast.get_humidity()) + " %"
 
@@ -96,7 +93,6 @@ class WeatherInfo:
             # Error gathering data
             print("Error")
             self._forecast_data = [city, "None", "None", "None", "None"]
-            
 
     def get_forecast_data(self):
         """
@@ -120,7 +116,6 @@ class WeatherSerialPort:
         the only device connected to a serial port
         """
         self._serial_port = serial.Serial(list_ports.comports()[0].device, 9600)
-
 
     def get_serial_port(self):
         """
@@ -152,7 +147,6 @@ class WeatherController:
         self._weather_info = weather_info
         self._serial_port = serial_port.get_serial_port()
 
-
     def update(self):
         """Updates forecast data and sends it to the Arduino Uno"""
         self._weather_info.download_forecast_data()
@@ -170,7 +164,6 @@ class WeatherController:
         self._serial_port.write([2])
         print("Update complete")
 
-
     def help(self):
         """Displays commands"""
         print("\nArduino Pi Weather Forecast Commands\n" +
@@ -181,7 +174,6 @@ class WeatherController:
               "wind: shows wind\n" +
               "new: asks user for a new city\n" +
               "update: updates weather information\n")
-
 
     def command_input(self):
         """Asks the user for a command"""
