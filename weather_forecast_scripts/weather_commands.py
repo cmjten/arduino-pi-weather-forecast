@@ -7,21 +7,27 @@ then displayed on the LCD screen. This script also tells the Arduino Uno
 which data to display. Command line is used as input.
 
 Commands:
-city - shows city name
-condition - shows weather condition
-temperature - shows temperature
-humidity - shows humidity
-wind - shows wind
-new - gets new city
-update - updates weather information
-help - command list
+show [data] : Shows the specified data
+  data : data to be shown
+    city	City name
+    cond	Weather condition
+    temp	Temperature
+    hum		Humidity
+    wind	Wind speed and direction
+
+get [city] : Gets forecast data from the specified city
+  city : A city
+
+update : Updates current city's weather forecast
+exit : Exits program
+help : Shows a list of commands
 
 External modules required:
 - PyOWM
 - PySerial
 """
 
-import pyowm, serial, time, re
+import pyowm, serial, time, sys, re
 import serial.tools.list_ports as list_ports
 
 
@@ -43,7 +49,6 @@ class WeatherInfo:
         self._forecast = None
         
         self._city = None
-        self.set_city() # Asks the user for a city
         
         # Stores forecast data in the following format:
         # [City, Condition, Temperature, Humidity, Wind]
@@ -57,9 +62,17 @@ class WeatherInfo:
         """
         return self._city
 
-    def set_city(self):
-        """Prompts the user for a new city"""
-        self._city = input("Enter a new city: ")
+    def set_city(self, city=None):
+        """
+        Prompts the user for a new city
+        
+        Parameters:
+        city: a city
+        """
+        if not city:
+            self._city = input("Enter a city: ")
+        else:
+            self._city = city
 
         try:
             self._forecast = self._owm.weather_at_place(self._city).get_weather()
@@ -81,7 +94,7 @@ class WeatherInfo:
                 str(int(self._forecast.get_temperature("fahrenheit")["temp"]))\
                 + " F"
 
-            humidity = str(self._forecast.get_humidity()) + " %"
+            humidity = str(self._forecast.get_humidity()) + " %" 
 
             # wind direction and speed
             wind = str(int(self._forecast.get_wind()["deg"])) + " deg, " + \
@@ -89,8 +102,7 @@ class WeatherInfo:
             
             self._forecast_data = [city, condition, temp, humidity, wind]
 
-        except:
-            # Error gathering data
+        except: # Error gathering data
             print("Error")
             self._forecast_data = [city, "None", "None", "None", "None"]
 
@@ -135,6 +147,12 @@ class WeatherController:
     _weather_info: WeatherInfo object
     _serial_port: Serial port where the Arduino Uno is connected
     """
+    # command regex
+    SHOW = re.compile("^\s*show\s*(city|temp|cond|hum|wind|.*)\s*$")
+    GET_CITY = re.compile("^\s*get\s*(.*)\s*$")
+    UPDATE = re.compile("^\s*update\s*$")
+    EXIT = re.compile("^\s*exit\s*$")
+    HELP = re.compile("^\s*help\s*$")
 
     def __init__(self, weather_info, serial_port):
         """
@@ -148,6 +166,76 @@ class WeatherController:
         self._weather_info = weather_info
         self._serial_port = serial_port.get_serial_port()
 
+    def command_input(self):
+        """Asks the user for a command"""
+        command = input("Enter a command (\"help\" for list of commands): ")
+
+        if self.SHOW.match(command): # show
+            if self._weather_info.get_city(): # City exists
+                self.show(command)
+            else: # City doesn't exist
+                print("No specified city. Use \"get [city]\" command.")
+                      
+        elif self.GET_CITY.match(command): # get
+            self.get(command)
+
+        elif self.UPDATE.match(command): # update
+            if self._weather_info.get_city(): # City exists
+                self.update()
+            else: # City doesn't exist
+                print("No specified city. Use \"get [city]\" command.")
+
+        elif self.EXIT.match(command): # exit
+            self.terminate()
+
+        elif self.HELP.match(command): # help
+            self.help()
+
+        else:
+            print("Invalid command. Enter \"help\" for a list of commands")
+
+    def show(self, command):
+        """
+        Parses the show command and shows the specified data
+
+        Parameters:
+        command: command entered by the user
+        """
+        if self.SHOW.match(command).group(1) == "city": # city
+            self._serial_port.write([0])
+
+        elif self.SHOW.match(command).group(1) == "cond": # condition
+            self._serial_port.write([1])
+
+        elif self.SHOW.match(command).group(1) == "temp": # temperature
+            self._serial_port.write([2])
+
+        elif self.SHOW.match(command).group(1) == "hum": # humidity
+            self._serial_port.write([3])
+
+        elif self.SHOW.match(command).group(1) == "wind": # wind
+            self._serial_port.write([4])
+
+        else:
+            print("show [data]\n" +
+                  "  data : city, cond, temp, hum, wind")
+
+    def get(self, command):
+        """
+        Parses the get command and gets forecast data for the
+        specified city
+
+        Parameters:
+        command: command entered by user
+        """
+        city = self.GET_CITY.match(command).group(1)
+        if city:
+            self._weather_info.set_city(city)
+            self.update()
+        else:
+            print("get [city]\n" +
+                  "  city : A city")
+
     def update(self):
         """Updates forecast data and sends it to the Arduino Uno"""
         self._weather_info.download_forecast_data()
@@ -156,62 +244,48 @@ class WeatherController:
         # Tells Arduino Uno that update process is about to start
         self._serial_port.write([5])
 
-        for data in forecast_data:
-            # Sends data
+        for data in forecast_data: # Sends data
             self._serial_port.write(data.encode())
             time.sleep(1.1)
 
-        # Displays new city's name
-        self._serial_port.write([0])
+        self._serial_port.write([0]) # Displays new city's name
         print("Update complete")
+
+    def terminate(self):
+        """Terminates the script and the sketch"""
+        self._serial_port.write([6])
+        print("Terminating")
+        sys.exit(0)
 
     def help(self):
         """Displays commands"""
-        print("\nArduino Pi Weather Forecast Commands\n" +
-              "city: shows city name\n" +
-              "condition: shows weather condition\n" +
-              "temperature: shows temperature\n" +
-              "humidity: shows humidity\n" +
-              "wind: shows wind\n" +
-              "new: asks user for a new city\n" +
-              "update: updates weather information\n")
-
-    def command_input(self):
-        """Asks the user for a command"""
-        command = input("Enter a command ('help' to show list of commands): ")
-
-        if command == "city":
-            self._serial_port.write([0])
-
-        elif command == "condition":
-            self._serial_port.write([1])
-
-        elif command == "temperature":
-            self._serial_port.write([2])
-
-        elif command == "humidity":
-            self._serial_port.write([3])
-
-        elif command == "wind":
-            self._serial_port.write([4])
-
-        elif command == "new":
-            self._weather_info.set_city()
-
-        elif command == "update":
-            self.update()
-
-        elif command == "help":
-            self.help()
-
-        else:
-            print("Invalid command")
+        print("\nArduino Pi Weather Forecast Commands\n\n" +
+              "show [data] : Shows the specified data\n" +
+              "  data : data to be shown\n" +
+              "    city\tCity name\n" +
+              "    cond\tWeather condition\n" +
+              "    temp\tTemperature\n" +
+              "    hum\t\tHumidity\n" +
+              "    wind\tWind speed and direction\n\n" +
+              "get [city] : Gets forecast data from the specified city\n" +
+              "  city : A city\n\n" +
+              "update : Updates current city's weather forecast\n" +
+              "exit : Exits program\n" +
+              "help : Shows a list of commands\n")
 
 
 if __name__ == "__main__":
-    weather_info = WeatherInfo()
     serial_port = WeatherSerialPort()
+    weather_info = WeatherInfo()
     controller = WeatherController(weather_info, serial_port)
+
+    weather_info.set_city() # Asks the user for a city
+
+    if weather_info.get_city():
+        controller.update()
+    else:
+        print("No specified city. Use \"get [city]\" command.")
 
     while True:
         controller.command_input()
+        

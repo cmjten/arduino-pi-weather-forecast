@@ -33,6 +33,7 @@ class WeatherControllerPS3(WeatherController):
     RIGHT = 5
     CIRCLE = 13
     SQUARE = 15
+    PS = 16
 
     def __init__(self, weather_info, serial_port):
         super(WeatherControllerPS3, self).__init__(weather_info, serial_port)
@@ -49,6 +50,10 @@ class WeatherControllerPS3(WeatherController):
         # down
         self._current_button_state = False
         self._previous_button_state = True
+
+    def update(self):
+        super().update()
+        self._data_index = 0
 
     def scroll_left(self):
         """Scrolls to the left"""
@@ -72,33 +77,46 @@ class WeatherControllerPS3(WeatherController):
         self._current_button_state = self._controller.get_button(self.LEFT) or\
                                     self._controller.get_button(self.RIGHT) or\
                                     self._controller.get_button(self.CIRCLE) or\
-                                    self._controller.get_button(self.SQUARE)
+                                    self._controller.get_button(self.SQUARE) or\
+                                    self._controller.get_button(self.PS)
 
         if self._current_button_state != self._previous_button_state:
             # Change in state
-            if self._controller.get_button(self.LEFT):
-                # Scroll left
+            if self._controller.get_button(self.LEFT): # Scroll left
                 self.scroll_left()
 
-            elif self._controller.get_button(self.RIGHT):
-                # Scroll right
+            elif self._controller.get_button(self.RIGHT): # Scroll right
                 self.scroll_right()
 
-            elif self._controller.get_button(self.CIRCLE):
-                # Update
+            elif self._controller.get_button(self.CIRCLE): # Update
                 self.update()
 
-            elif self._controller.get_button(self.SQUARE):
-                # New city
+            elif self._controller.get_button(self.SQUARE): # New city
                 self._weather_info.set_city()
+
+                if weather_info.get_city(): # city exists
+                    self.update()
+                else: # city doesn't exist
+                    print("No specified city. Press the square button " +
+                          "to enter a city.")
+
+            elif self._controller.get_button(self.PS): # Exit program
+                self.terminate()
 
         self._previous_button_state = self._current_button_state
 
 
 if __name__ == "__main__":
-    weather_info = WeatherInfo()
     serial_port = WeatherSerialPort()
+    weather_info = WeatherInfo()
     controller = WeatherControllerPS3(weather_info, serial_port)
+
+    weather_info.set_city() # Asks the user for a city
+
+    if weather_info.get_city():
+        controller.update()
+    else:
+        print("No specified city. Press the square button to enter a city.")
     
     while True:
         controller.controller_listener()

@@ -47,6 +47,10 @@ void loop() {
       // Displays data
       displayData(command);
     }
+    else if (command == 6) {
+      // Clears LCD
+      lcd.clear();
+    }
   }
 }
 
