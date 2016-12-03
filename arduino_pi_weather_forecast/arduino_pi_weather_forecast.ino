@@ -36,35 +36,38 @@ void loop() {
     // forecast data. If the byte is 2-6, display the corresponding
     // forecast data.
     command = Serial.read();
-    if (command == 1) {
+    if (command == 5) {
       // Updates forecast data
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("Updating...");
       update();
     }
-    else if (command >= 2 && command <= 6) {
+    else if (command >= 0 && command <= 4) {
       // Displays data
       displayData(command);
     }
-    command = 0;
   }
 }
 
 void update() {
   // Updates the forecast data
-  for (int index=0; index < 5; index++) {
-    forecastData[index] = Serial.readString();
-    delay(1000);
+  int index = 0;
+  
+  while (index < 5) {
+    if (Serial.available()) {
+      forecastData[index] = Serial.readString();
+      index++;
+    }
   }
 }
 
 void displayData(int command) {
   // Displays data corresponding to the byte sent by the
-  // Raspberry Pi (2-6) minus 2.
+  // Raspberry Pi (0-4).
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(dataLabels[command-2]);
+  lcd.print(dataLabels[command]);
   lcd.setCursor(0, 1);
-  lcd.print(forecastData[command-2]);
+  lcd.print(forecastData[command]);
 }

@@ -23,7 +23,7 @@ class WeatherControllerPS3(WeatherController):
     Inherits WeatherController class from the weather_keyboard script.
 
     Instance variables:
-    _data_index: index + 2 of the current data being displayed
+    _data_index: index of the current data being displayed
     _controller: Controller being used
     _current_button_state: Current button state
     _previous_button_state: Button state from previous loop iteration
@@ -36,7 +36,7 @@ class WeatherControllerPS3(WeatherController):
 
     def __init__(self, weather_info, serial_port):
         super(WeatherControllerPS3, self).__init__(weather_info, serial_port)
-        self._data_index = 2
+        self._data_index = 0
 
         # Sets up pygame
         pygame.init()
@@ -52,13 +52,13 @@ class WeatherControllerPS3(WeatherController):
 
     def scroll_left(self):
         """Scrolls to the left"""
-        if self._data_index > 2:
+        if self._data_index > 0:
             self._data_index -= 1
         self._serial_port.write([self._data_index])
 
     def scroll_right(self):
         """Scrolls to the right"""
-        if self._data_index < 6:
+        if self._data_index < 4:
             self._data_index += 1
         self._serial_port.write([self._data_index])
 

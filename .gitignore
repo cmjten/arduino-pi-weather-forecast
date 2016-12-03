@@ -1,1 +1,5 @@
 /weather_forecast_scripts/__pycache__/
+*.xml
+Thumbs.db
+*.iml
+weather_forecast_scripts/.idea/.name

@@ -21,7 +21,7 @@ External modules required:
 - PySerial
 """
 
-import pyowm, serial, time
+import pyowm, serial, time, re
 import serial.tools.list_ports as list_ports
 
 
@@ -135,6 +135,7 @@ class WeatherController:
     _weather_info: WeatherInfo object
     _serial_port: Serial port where the Arduino Uno is connected
     """
+
     def __init__(self, weather_info, serial_port):
         """
         Constructor
@@ -153,15 +154,15 @@ class WeatherController:
         forecast_data = self._weather_info.get_forecast_data()
 
         # Tells Arduino Uno that update process is about to start
-        self._serial_port.write([1])
+        self._serial_port.write([5])
 
         for data in forecast_data:
             # Sends data
             self._serial_port.write(data.encode())
-            time.sleep(2)
+            time.sleep(1.1)
 
         # Displays new city's name
-        self._serial_port.write([2])
+        self._serial_port.write([0])
         print("Update complete")
 
     def help(self):
@@ -180,19 +181,19 @@ class WeatherController:
         command = input("Enter a command ('help' to show list of commands): ")
 
         if command == "city":
-            self._serial_port.write([2])
+            self._serial_port.write([0])
 
         elif command == "condition":
-            self._serial_port.write([3])
+            self._serial_port.write([1])
 
         elif command == "temperature":
-            self._serial_port.write([4])
+            self._serial_port.write([2])
 
         elif command == "humidity":
-            self._serial_port.write([5])
+            self._serial_port.write([3])
 
         elif command == "wind":
-            self._serial_port.write([6])
+            self._serial_port.write([4])
 
         elif command == "new":
             self._weather_info.set_city()
@@ -211,6 +212,6 @@ if __name__ == "__main__":
     weather_info = WeatherInfo()
     serial_port = WeatherSerialPort()
     controller = WeatherController(weather_info, serial_port)
-    
+
     while True:
         controller.command_input()
