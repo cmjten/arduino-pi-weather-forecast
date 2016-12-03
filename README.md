@@ -14,14 +14,15 @@ for command line input and weather_ps3.py for PS3 controller input.
 - PS3 Controller (optional)
 
 ### Commands (weather_commands.py)
-- city : shows city name
-- condition : shows weather condition
-- temperature : shows temperature
-- humidity : shows humidity
-- wind : shows wind speed and direction
-- new : asks user for a new city
-- update : updates weather information ands sends data to Arduino Uno
-- help : command list
+- show city : Shows city name
+- show cond : Shows weather condition
+- show temp : Shows temperature
+- show hum : Shows humidity
+- show wind : Shows wind speed and direction
+- get [city] : Gets forecast data from the specified city
+- update : Updates current city's weather forecast
+- exit : Exits program
+- help : Shows a list of commands
 
 ### Controls (weather_ps3.py)
 - Left and right buttons to scroll through forecast data
