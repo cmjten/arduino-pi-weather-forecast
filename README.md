@@ -25,9 +25,11 @@ for command line input and weather_ps3.py for PS3 controller input.
 - help : Shows a list of commands
 
 ### Controls (weather_ps3.py)
-- Left and right buttons to scroll through forecast data
-- Circle button to send data from Raspberry Pi to the Arduino Uno
-- Square button to prompt user for a new city
+- Left button : Scroll left
+- Right button : Scroll right
+- Circle button : Update data
+- Square button : Get new city
+- Playstation button : Exit
 
 ### Images
 
