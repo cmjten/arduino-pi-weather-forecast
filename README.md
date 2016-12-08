@@ -7,11 +7,13 @@ for command line input and weather_ps3.py for PS3 controller input.
 ###[Demo Video (PS3 Controller)](https://vid.me/Iex0)
 
 ### Components
-- Raspberry Pi 3
 - Arduino Uno
 - 220 Ohm Resistor
 - 16x2 LCD screen
-- PS3 Controller (optional)
+- Raspberry Pi 3*
+- PS3 Controller*
+
+<sub>\* Optional. Script can be run on any computer that has Python, but the Raspberry Pi 3 is more convenient because Raspbian detects the PS3 controller connected through Bluetooth while Windows 10 doesn't seem to. This hasn't been tested on a Mac.</sub>
 
 ### Commands (weather_commands.py)
 - show city : Shows city name
