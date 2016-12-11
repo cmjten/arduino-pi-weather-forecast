@@ -127,7 +127,7 @@ class WeatherSerialPort:
         Gets the first serial port connected. Assumes that Arduino Uno is
         the only device connected to a serial port
         """
-        self._serial_port = serial.Serial(list_ports.comports()[0].device, 9600)
+        self._serial_port = serial.Serial(list_ports.comports()[0].device, 115200)
 
     def get_serial_port(self):
         """
@@ -246,7 +246,7 @@ class WeatherController:
 
         for data in forecast_data: # Sends data
             self._serial_port.write(data.encode())
-            time.sleep(1.1)
+            time.sleep(0.02)
 
         self._serial_port.write([0]) # Displays new city's name
         print("Update complete")

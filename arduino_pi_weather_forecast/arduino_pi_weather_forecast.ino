@@ -26,7 +26,8 @@ int command = 0; // If the value is 1, the Arduino Uno will
 
 void setup() {
   // Starts serial communication and the LCD
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.setTimeout(10);
   lcd.begin(16, 2);
 }
 
