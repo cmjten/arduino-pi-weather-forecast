@@ -75,7 +75,7 @@ class WeatherInfo:
             self._city = city
 
         try:
-            self._forecast = self._owm.weather_at_place(self._city).get_weather()
+            self._forecast=self._owm.weather_at_place(self._city).get_weather()
             print("City found")
         except:
             print("City not found")
@@ -98,7 +98,7 @@ class WeatherInfo:
 
             # wind direction and speed
             wind = str(int(self._forecast.get_wind()["deg"])) + " deg, " + \
-                   str(int(self._forecast.get_wind()["speed"]))[0:3] + " kmh"
+                str(int(self._forecast.get_wind()["speed"]))[0:3] + " kmh"
             
             self._forecast_data = [city, condition, temp, humidity, wind]
 
@@ -127,7 +127,7 @@ class WeatherSerialPort:
         Gets the first serial port connected. Assumes that Arduino Uno is
         the only device connected to a serial port
         """
-        self._serial_port = serial.Serial(list_ports.comports()[0].device, 115200)
+        self._serial_port=serial.Serial(list_ports.comports()[0].device, 115200)
 
     def get_serial_port(self):
         """
