@@ -47,7 +47,6 @@ class WeatherInfo:
         # Setting up PyOWM
         self._owm = pyowm.OWM("5ec1a1baebeabb32f92cec56a6682dfb")
         self._forecast = None
-        
         self._city = None
         
         # Stores forecast data in the following format:
@@ -57,8 +56,6 @@ class WeatherInfo:
     def get_city(self):
         """
         Returns the city
-
-        return: self._city
         """
         return self._city
 
@@ -70,9 +67,9 @@ class WeatherInfo:
         city: a city
         """
         if not city:
-            self._city = input("Enter a city: ")
+            self._city = input("Enter a city: ") + '\0'
         else:
-            self._city = city
+            self._city = city + '\0'
 
         try:
             self._forecast=self._owm.weather_at_place(self._city).get_weather()
@@ -83,34 +80,31 @@ class WeatherInfo:
     def download_forecast_data(self):
         """Downloads forecast data from PyOWM API"""
         print("Updating...")
-        city = self._city.split(",")[0] # City name only
         
         try:
-            condition = self._forecast.get_status()
+            condition = self._forecast.get_status() + '\0'
 
             # temp in C and F
             temp = str(int(self._forecast.get_temperature("celsius")["temp"]))\
                 + " C / " + \
                 str(int(self._forecast.get_temperature("fahrenheit")["temp"]))\
-                + " F"
+                + " F\0"
 
-            humidity = str(self._forecast.get_humidity()) + " %" 
+            humidity = str(self._forecast.get_humidity()) + " %\0" 
 
             # wind direction and speed
             wind = str(int(self._forecast.get_wind()["deg"])) + " deg, " + \
-                str(int(self._forecast.get_wind()["speed"]))[0:3] + " kmh"
+                str(int(self._forecast.get_wind()["speed"]))[0:3] + " kmh\0"
             
-            self._forecast_data = [city, condition, temp, humidity, wind]
+            self._forecast_data = [self._city, condition, temp, humidity, wind]
 
         except: # Error gathering data
             print("Error")
-            self._forecast_data = [city, "None", "None", "None", "None"]
+            self._forecast_data = [self._city, "None", "None", "None", "None"]
 
     def get_forecast_data(self):
         """
         Returns forecast data
-
-        return: self._forecast_data
         """
         return self._forecast_data
 
@@ -127,13 +121,11 @@ class WeatherSerialPort:
         Gets the first serial port connected. Assumes that Arduino Uno is
         the only device connected to a serial port
         """
-        self._serial_port=serial.Serial(list_ports.comports()[0].device, 115200)
+        self._serial_port = serial.Serial(list_ports.comports()[0].device, 9600)
 
     def get_serial_port(self):
         """
         Returns the serial port
-
-        return: self._serial_port
         """
         return self._serial_port
 
@@ -156,8 +148,6 @@ class WeatherController:
 
     def __init__(self, weather_info, serial_port):
         """
-        Constructor
-
         Parameters:
         weather_info: A WeatherInfo object. Stores weather info.
         serial_port: A WeatherSerialPort object. Serial port where the
@@ -246,7 +236,6 @@ class WeatherController:
 
         for data in forecast_data: # Sends data
             self._serial_port.write(data.encode())
-            time.sleep(0.02)
 
         self._serial_port.write([0]) # Displays new city's name
         print("Update complete")
